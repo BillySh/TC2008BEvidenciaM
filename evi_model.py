@@ -204,12 +204,35 @@ estacionamientos = [
     (19, 3),
 ]
 
-semaforoR =[ (5,15), (6,15),(0,12),(1,12),
-           (12,2),(13,2),(14,3),(15,3),(22,7),(23,7),
-           (14,21),(15,21)
-                    ]
+semaforoR = [
+    (5, 15),
+    (6, 15),
+    (0, 12),
+    (1, 12),
+    (12, 2),
+    (13, 2),
+    (14, 3),
+    (15, 3),
+    (22, 7),
+    (23, 7),
+    (14, 21),
+    (15, 21),
+]
 
-semaforoV = [(2,10),(2,11),(7,16),(7,17),(16,22),(16,23),(11,0),(11,1),(16,4),(16,5),(21,8),(21,9) ]
+semaforoV = [
+    (2, 10),
+    (2, 11),
+    (7, 16),
+    (7, 17),
+    (16, 22),
+    (16, 23),
+    (11, 0),
+    (11, 1),
+    (16, 4),
+    (16, 5),
+    (21, 8),
+    (21, 9),
+]
 
 # ------------------------------------------- Grafo---------------------------------
 grafo_info = {
@@ -311,19 +334,23 @@ class estacionamientoAgent(Agent):
 
 
 class semaforoRAgent(Agent):
-    def __init__(self,unique_id,model):
-        super().__init__(unique_id,model)
-        self.agentT = 2 #Semaforo
-        self.estado = 0 # Color del semaforo 0 = rojo 1 = verde 2 = amarillo
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+        self.agentT = 2  # Semaforo
+        self.estado = 0  # Color del semaforo 0 = rojo 1 = verde 2 = amarillo
         self.paso = 0
+
     def change(self):
         self.estado = 1
+
     def changeB(self):
-        self.estado = 0    
+        self.estado = 0
+
     def add(self):
-        self.paso +=1
+        self.paso += 1
+
     def step(self):
-        if (self.paso%3) == 0:
+        if (self.paso % 3) == 0:
             if self.estado == 0:
                 self.change()
             else:
@@ -331,28 +358,31 @@ class semaforoRAgent(Agent):
         self.add()
         pass
 
+
 class semaforoVAgent(Agent):
-    def __init__(self,unique_id,model):
-        super().__init__(unique_id,model)
-        self.agentT = 2 #Semaforo
-        self.estado = 1 # Color del semaforo 0 = rojo 1 = verde 2 = amarillo
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+        self.agentT = 2  # Semaforo
+        self.estado = 1  # Color del semaforo 0 = rojo 1 = verde 2 = amarillo
         self.paso = 0
 
     def change(self):
         self.estado = 0
+
     def changeB(self):
         self.estado = 1
+
     def add(self):
-        self.paso +=1
+        self.paso += 1
 
     def step(self):
-        if (self.paso%3) == 0:
+        if (self.paso % 3) == 0:
             if self.estado == 1:
                 self.change()
             else:
                 self.changeB()
         self.add()
-        
+
         pass
 
 
@@ -402,9 +432,8 @@ class CarModel(Model):
         self.num_agents = num_agents
         self.grid = mesa.space.MultiGrid(width, height, True)
         self.schedule = RandomActivation(self)
-        self.graph = nx.Graph()
+        self.graph = nx.DiGraph()
         self.unique_id_counter = 0
-        
 
         for node, connections in grafo_info.items():
             for neighbor, cost in connections.items():
@@ -441,15 +470,15 @@ class CarModel(Model):
             self.grid.place_agent(pavA, (x, y))
             o += 1
         for i in semaforoR:
-            #print("Mapa")
-            pavA = semaforoRAgent(o,self)
+            # print("Mapa")
+            pavA = semaforoRAgent(o, self)
             x, y = i
             self.schedule.add(pavA)
-            self.grid.place_agent(pavA,(x,y))
+            self.grid.place_agent(pavA, (x, y))
             o += 1
         for i in semaforoV:
-            #print("Mapa")
-            pavA = semaforoVAgent(o,self)
+            # print("Mapa")
+            pavA = semaforoVAgent(o, self)
             x, y = i
             self.schedule.add(pavA)
             self.grid.place_agent(pavA, (x, y))

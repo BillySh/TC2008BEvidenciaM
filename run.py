@@ -5,8 +5,8 @@ from evi_model import (
     CarModel,
     obstaculoAgent,
     estacionamientoAgent,
-    semaforoAgent,
-    CarAgent,
+    semaforoRAgent,
+    CarAgent, semaforoVAgent
 )
 
 
@@ -28,9 +28,16 @@ def agent_portrayal(agent):
         portrayal["w"] = 1
         portrayal["Filled"] = True
 
-    if isinstance(agent, semaforoAgent):
+    if agent.estado == 0:
         portrayal["Shape"] = "rect"
-        portrayal["Color"] = "#FF0100"
+        portrayal["Color"] = "red"
+        portrayal["Layer"] = 1
+        portrayal["h"] = 1
+        portrayal["w"] = 1
+        portrayal["Filled"] = True
+    elif agent.estado == 1:
+        portrayal["Shape"] = "rect"
+        portrayal["Color"] = "green"
         portrayal["Layer"] = 1
         portrayal["h"] = 1
         portrayal["w"] = 1

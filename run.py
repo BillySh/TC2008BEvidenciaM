@@ -14,7 +14,7 @@ def agent_portrayal(agent):
     portrayal = {}
     if isinstance(agent, obstaculoAgent):
         portrayal["Shape"] = "rect"
-        portrayal["Color"] = "black"
+        portrayal["Color"] = "#5A9BD5"
         portrayal["Layer"] = 1
         portrayal["h"] = 1
         portrayal["w"] = 1
@@ -30,7 +30,7 @@ def agent_portrayal(agent):
 
     if isinstance(agent, semaforoAgent):
         portrayal["Shape"] = "rect"
-        portrayal["Color"] = "red"
+        portrayal["Color"] = "#FF0100"
         portrayal["Layer"] = 1
         portrayal["h"] = 1
         portrayal["w"] = 1
@@ -38,7 +38,7 @@ def agent_portrayal(agent):
 
     if isinstance(agent, CarAgent):
         portrayal["Shape"] = "rect"
-        portrayal["Color"] = "green"
+        portrayal["Color"] = "#00AF4F"
         portrayal["Layer"] = 1
         portrayal["h"] = 1
         portrayal["w"] = 1

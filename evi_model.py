@@ -263,14 +263,14 @@ grafo_info = {
     (15, 5): {(15, 8): 3},
     (15, 8): {(15, 11): 3, (22, 8): 7},
     (15, 11): {(15, 13): 2, (12, 11): 3},
-    (15, 13): {(15, 16): 3},
+    (15, 13): {(15, 16): 3, (16, 13): 1},
     (15, 16): {(15, 22): 6, (18, 16): 3},
     (15, 22): {(12, 22): 3},
-    (17, 5): {(15, 5): 2},
+    (17, 5): {(15, 5): 2, (17, 6): 1},
     (18, 11): {(15, 11): 3, (18, 16): 5},
     (18, 16): {(22, 16): 4},
     (18, 19): {(18, 16): 3, (19, 19): 1},
-    (18, 20): {(18, 19): 1},
+    (18, 20): {(18, 19): 1, (17, 20): 1},
     (18, 22): {(18, 20): 2, (15, 22): 3},
     (19, 4): {(19, 3): 1},
     (19, 5): {(19, 4): 1},
@@ -306,40 +306,23 @@ puntos_inicio = [
 
 # Estacionamientos
 lineas_llegada = [
-    # (2, 6),
-    # (2, 20),
-    # (4, 13),
-    # (5, 3),
-    # (6, 18),
-    # (8, 3),
-    # (8, 15),
-    # (9, 21),
-    # (11, 13),
-    # (11, 19),
-    # (16, 13),
-    # (17, 6),
-    # (17, 20),
-    # (19, 3),
-    # (19, 5),
-    # (20, 19),
-    # (21, 14),
-    (1, 6),
-    (1, 20),
-    (5, 13),
-    (6, 3),
-    (6, 17),
-    (7, 3),
-    (8, 16),
-    (9, 22),
-    (12, 13),
-    (12, 19),
-    (15, 13),
-    (17, 5),
-    (18, 20),
-    (19, 4),
+    (2, 6),
+    (2, 20),
+    (4, 13),
+    (5, 3),
+    (6, 18),
+    (8, 3),
+    (8, 15),
+    (9, 21),
+    (11, 13),
+    (11, 19),
+    (16, 13),
+    (17, 6),
+    (17, 20),
+    (19, 3),
     (19, 5),
-    (19, 19),
-    (22, 14),
+    (20, 19),
+    (21, 14),
 ]
 
 puntos_inicio_random = random.sample(puntos_inicio, 5)
@@ -377,18 +360,39 @@ class semaforoAgent(Agent):
 
 
 # --------------------------------------Main AGENT------------------------------------------
+
+
 class CarAgent(Agent):
     def __init__(self, unique_id, model, pos, destino):
         super().__init__(unique_id, model)
         self.pos = pos
         self.destino = destino
         self.ruta = model.dijkstra(pos, destino)
+        # self.ruta = self.ruta[1:]
+        self.step_count = 0  # Contador de pasos
+        print(
+            f"Agente en {self.pos} con destino a {self.destino}. Mi ruta es: {self.ruta}"
+        )
 
     def move(self):
         if len(self.ruta) > 1:
             siguiente_paso = self.ruta[1]
-            self.model.grid.move_agent(self, siguiente_paso)
-            self.ruta = self.ruta[1:]
+
+            dx = siguiente_paso[0] - self.pos[0]
+            dy = siguiente_paso[1] - self.pos[1]
+
+            if dx != 0:
+                new_pos = (self.pos[0] + (dx // abs(dx)), self.pos[1])
+            elif dy != 0:
+                new_pos = (self.pos[0], self.pos[1] + (dy // abs(dy)))
+            else:
+                new_pos = self.pos
+                self.ruta = self.ruta[1:]
+
+            # TODO: Semaforos y colisiones
+            self.model.grid.move_agent(self, new_pos)
+            self.pos = new_pos
+            self.step_count += 1
 
     def step(self):
         self.move()

@@ -394,6 +394,7 @@ class CarAgent(Agent):
         self.pos = pos
         self.destino = destino
         self.estado = 3
+        self.direccion = "norte"
         self.ruta = model.dijkstra(pos, destino)
         # self.ruta = self.ruta[1:]
         self.step_count = 0  # Contador de pasos
@@ -409,8 +410,17 @@ class CarAgent(Agent):
             dy = siguiente_paso[1] - self.pos[1]
 
             if dx != 0:
+                if dx > 0:
+                    self.direccion = "este"
+                else:
+                    self.direccion = "oeste"
                 new_pos = (self.pos[0] + (dx // abs(dx)), self.pos[1])
             elif dy != 0:
+                # Define la direccion
+                if dy > 0:
+                    self.direccion = "norte"
+                else:
+                    self.direccion = "sur"
                 new_pos = (self.pos[0], self.pos[1] + (dy // abs(dy)))
             else:
                 new_pos = self.pos

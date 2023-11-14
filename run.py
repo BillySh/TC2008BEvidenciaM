@@ -1,19 +1,13 @@
 import mesa
 
 # Data manipulation and analysis.
-from evi_model import CarModel, obstaculoAgent, estacionamientoAgent, semaforoAgent
-
-
-def get_pasos(model):
-    return f"Pasos: {model.pasos}"
-
-
-def get_choques(model):
-    return f"Choques: {model.choques}"
-
-
-def get_choquesToreto(model):
-    return f"Choques Toreto: {model.toretoCrash}"
+from evi_model import (
+    CarModel,
+    obstaculoAgent,
+    estacionamientoAgent,
+    semaforoAgent,
+    CarAgent,
+)
 
 
 def agent_portrayal(agent):
@@ -37,6 +31,14 @@ def agent_portrayal(agent):
     if isinstance(agent, semaforoAgent):
         portrayal["Shape"] = "rect"
         portrayal["Color"] = "red"
+        portrayal["Layer"] = 1
+        portrayal["h"] = 1
+        portrayal["w"] = 1
+        portrayal["Filled"] = True
+
+    if isinstance(agent, CarAgent):
+        portrayal["Shape"] = "rect"
+        portrayal["Color"] = "green"
         portrayal["Layer"] = 1
         portrayal["h"] = 1
         portrayal["w"] = 1

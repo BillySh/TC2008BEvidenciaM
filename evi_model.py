@@ -233,6 +233,7 @@ semaforo = [
 
 # ------------------------------------------- Grafo---------------------------------
 grafo_info = {
+    # Rutas
     (1, 1): {(6, 1): 5},
     (1, 6): {(1, 1): 5, (2, 6): 1},
     (1, 8): {(1, 6): 2},
@@ -387,7 +388,7 @@ class CarAgent(Agent):
         if len(self.ruta) > 1:
             siguiente_paso = self.ruta[1]
             self.model.grid.move_agent(self, siguiente_paso)
-            self.ruta = self.ruta[1:]  # Actualiza la ruta eliminando el paso actual
+            self.ruta = self.ruta[1:]
 
     def step(self):
         self.move()
@@ -399,7 +400,8 @@ class CarModel(Model):
         self.num_agents = num_agents
         self.grid = mesa.space.MultiGrid(width, height, True)
         self.schedule = RandomActivation(self)
-        self.graph = nx.Graph(grafo_info)
+        self.graph = nx.Graph()
+        self.unique_id_counter = 0
 
         for node, connections in grafo_info.items():
             for neighbor, cost in connections.items():
@@ -414,9 +416,10 @@ class CarModel(Model):
 
         for punto, destino in zip(self.puntos_inicio, self.lineas_llegada):
             x, y = punto
-            carro = CarAgent(x + 100, model=self, pos=(x, y), destino=destino)
+            carro = CarAgent(o, model=self, pos=(x, y), destino=destino)
             self.schedule.add(carro)
             self.grid.place_agent(carro, (x, y))
+            o += 1
 
         # Create the obstacles
         for i in ObstaculosM:
@@ -443,10 +446,6 @@ class CarModel(Model):
             o += 1
 
     def dijkstra(self, inicio, destino):
-        # Utiliza el grafo para realizar el algoritmo de Dijkstra
-        print("Grafo:")
-        print(self.graph.nodes)
-        print(self.graph.edges)
         ruta_mas_corta = nx.shortest_path(
             self.graph, source=inicio, target=destino, weight="weight"
         )

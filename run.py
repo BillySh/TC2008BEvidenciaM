@@ -38,7 +38,7 @@ def agent_portrayal(agent):
 
     if isinstance(agent, CarAgent):
         portrayal["Shape"] = "rect"
-        portrayal["Color"] = "#00AF4F"
+        portrayal["Color"] = "#A180D5"
         portrayal["Layer"] = 1
         portrayal["h"] = 1
         portrayal["w"] = 1

@@ -349,7 +349,7 @@ class semaforoRAgent(Agent):
         self.paso += 1
 
     def step(self):
-        if (self.paso % 3) == 0:
+        if (self.paso % 10) == 0:
             if self.estado == 0:
                 self.change()
             else:
@@ -375,7 +375,7 @@ class semaforoVAgent(Agent):
         self.paso += 1
 
     def step(self):
-        if (self.paso % 3) == 0:
+        if (self.paso % 10) == 0:
             if self.estado == 1:
                 self.change()
             else:
@@ -416,7 +416,21 @@ class CarAgent(Agent):
                 new_pos = self.pos
                 self.ruta = self.ruta[1:]
 
-            # TODO: Semaforos y colisiones
+            # Si es semaforo espera
+            cell_contents = self.model.grid.get_cell_list_contents([new_pos])
+            for content in cell_contents:
+                if (
+                    isinstance(content, (semaforoRAgent, semaforoVAgent))
+                    and content.estado == 0
+                ):
+                    return
+
+            # Si es carro espera
+            car_agents = [obj for obj in cell_contents if isinstance(obj, CarAgent)]
+            if car_agents:
+                return
+
+            # Si no hay nada avanza
             self.model.grid.move_agent(self, new_pos)
             self.pos = new_pos
             self.step_count += 1

@@ -1,4 +1,8 @@
 import mesa
+from mesa import Model
+from mesa import Agent
+
+
 
 # Data manipulation and analysis.
 from evi_model import (
@@ -56,8 +60,10 @@ def agent_portrayal(agent):
 
 grid = mesa.visualization.CanvasGrid(agent_portrayal, 24, 24)
 server = mesa.visualization.ModularServer(
-    CarModel, [grid], "Car Model", {"width": 24, "height": 24, "num_agents": 5}
+    CarModel, [grid], "Car Model", {"width": 24, "height": 24, "num_agents": 5}, 
 )
 server.port = 8521  # the default
-
 server.launch()
+
+    
+

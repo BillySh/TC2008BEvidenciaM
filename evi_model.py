@@ -10,6 +10,8 @@ from mesa.time import RandomActivation
 import mesa
 import random
 import networkx as nx
+import json
+import requests
 
 # --------------------------Code---------------------------------------------
 
@@ -396,6 +398,7 @@ class CarAgent(Agent):
         self.estado = 3
         self.direccion = "norte"
         self.ruta = model.dijkstra(pos, destino)
+
         # self.ruta = self.ruta[1:]
         self.step_count = 0  # Contador de pasos
         print(
@@ -457,6 +460,7 @@ class CarModel(Model):
         self.schedule = RandomActivation(self)
         self.graph = nx.DiGraph()
         self.unique_id_counter = 0
+        self.step_count = 0
 
         for node, connections in grafo_info.items():
             for neighbor, cost in connections.items():
@@ -512,6 +516,23 @@ class CarModel(Model):
             self.graph, source=inicio, target=destino, weight="weight"
         )
         return ruta_mas_corta
+    
+    def send_positions_to_server(self):
+            positions_data = {f"car_{car_agent_agent.unique_id}": [car_agent_agent.pos[0], car_agent_agent.pos[1]] for car_agent_agent in self.schedule.agents if isinstance(car_agent_agent, CarAgent)}
+            print("PositionData:", positions_data)
+            requests.post("http://127.0.0.1:5000/update_positions", json=positions_data)
 
     def step(self):
         self.schedule.step()
+        self.step_count += 1  # Incrementar el contador de pasos en cada llamada a step
+
+
+        # Condición de finalización: terminar después de 100 pasos
+        if self.step_count >= 100:
+            self.running = False
+       
+        self.send_positions_to_server()  # Añadir esta línea al final de step
+    
+    
+
+

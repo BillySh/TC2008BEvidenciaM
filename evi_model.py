@@ -322,25 +322,30 @@ class semaforoRAgent(Agent):
         self.paso = 0
 
     def change(self):
-        self.estado = 1
+        self.estado = 2
 
     def changeB(self):
         self.estado = 0
 
+    def changeC(self):
+        self.estado = 1
+
     def add(self):
         self.paso += 1
 
-    def check_signal():
+    def check_signal(self):
         contents = self.model.grid.get_cell_list_contents((15, 23))
-        return contents.estado
+        for content in contents:
+            if isinstance(content, SemaforoSignal):
+                return content.estado
 
     def step(self):
-        if(self.check_signal == 0):
+        if self.check_signal() == 0:
             self.change()
-        if(self.check_signal == 1):
+        if self.check_signal() == 1:
             self.changeB()
-        if(self.check_signal == 2):
-            self.changeA()
+        if self.check_signal() == 2:
+            self.changeC()
         pass
 
 
@@ -352,24 +357,30 @@ class semaforoVAgent(Agent):
         self.paso = 0
 
     def change(self):
-        self.estado = 0
+        self.estado = 2
 
     def changeB(self):
         self.estado = 1
 
     def changeC(self):
-        self.estado = 2
+        self.estado = 0
 
     def add(self):
         self.paso += 1
 
+    def check_signal(self):
+        contents = self.model.grid.get_cell_list_contents((15, 23))
+        for content in contents:
+            if isinstance(content, SemaforoSignal):
+                return content.estado
+
     def step(self):
-        if () == 0:
-            if self.estado == 1:
-                self.change()
-            else:
-                self.changeB()
-        self.add()
+        if self.check_signal() == 0:
+            self.change()
+        if self.check_signal() == 1:
+            self.changeB()
+        if self.check_signal() == 2:
+            self.changeC()
         pass
 
 
@@ -377,49 +388,40 @@ class SemaforoSignal(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.agentT = 2
-        self.estado = 0  # 0 amarillo 1 derecha 2 izquierda
+        self.state = 0  # 0 amarillo 1 derecha 2 izquierda
         self.paso = 0
-
-    def change(self):
-        self.estado = 0
-
-    def changeB(self):
-        self.paso = 1
+        self.steps_in_current_state = (
+            0  # Track the number of steps in the current state
+        )
 
     def add(self):
         self.paso += 1
 
     def is_car_near(self):
         x, y = self.pos
-        agents_left = self.model.grid.get_cell_list_contents((x + 2, y - 1))
-        print(agents_left)
+        agents_left = self.model.grid.get_cell_list_contents((x + 3, y - 1))
         for agent in agents_left:
             if isinstance(agent, CarAgent):
-                print("hay agente en la derecha")
-                print(agent.pos)
-                return "Derecha"
-        agents_right = self.model.grid.get_cell_list_contents((x, y - 3))
+                return 1
+        agents_right = self.model.grid.get_cell_list_contents((x, y - 4))
         for agent in agents_right:
             if isinstance(agent, CarAgent):
-                print("hay agente abajo")
-                return "Abajo"
-        return "Nada"
+                return 2
+        return 0
 
-    
     def step(self):
-        self.is_car_near()
-        print(self.is_car_near())
-        if(self.is_car_near() == "Derecha"):
-            print("derecha")
-            self.estado = 1
-        if(self.is_car_near() == "Abajo"):
-            print("abajo")
-            self.estado = 2
-        if(self.is_car_near() == "Nada"):
-            print("nada")
-            self.estado = 0
+        current = self.is_car_near()
+        if current != 0:
+            self.steps_in_current_state += 1
+            self.state = current
+            if self.steps_in_current_state >= 10:
+                self.state = 0
+                self.steps_in_current_state = 0
+        else:
+            self.state = self.is_car_near()
+            self.steps_in_current_state = 0
         pass
-            
+
 
 # --------------------------------------Main AGENT------------------------------------------
 
@@ -547,29 +549,31 @@ class CarModel(Model):
         semaforoSig = SemaforoSignal(o, self)
         self.schedule.add(semaforoSig)
         self.grid.place_agent(semaforoSig, (15, 23))
-        o+=1
+        o += 1
 
     def dijkstra(self, inicio, destino):
         ruta_mas_corta = nx.shortest_path(
             self.graph, source=inicio, target=destino, weight="weight"
         )
         return ruta_mas_corta
-    
+
     def send_positions_to_server(self):
-            positions_data = {f"car_{car_agent_agent.unique_id}": [car_agent_agent.pos[0], car_agent_agent.pos[1]] for car_agent_agent in self.schedule.agents if isinstance(car_agent_agent, CarAgent)}
-            requests.post("http://127.0.0.1:5000/update_positions", json=positions_data)
+        positions_data = {
+            f"car_{car_agent_agent.unique_id}": [
+                car_agent_agent.pos[0],
+                car_agent_agent.pos[1],
+            ]
+            for car_agent_agent in self.schedule.agents
+            if isinstance(car_agent_agent, CarAgent)
+        }
+        requests.post("http://127.0.0.1:5000/update_positions", json=positions_data)
 
     def step(self):
         self.schedule.step()
         self.step_count += 1  # Incrementar el contador de pasos en cada llamada a step
 
-
         # Condición de finalización: terminar después de 100 pasos
         if self.step_count >= 100:
             self.running = False
-       
+
         self.send_positions_to_server()  # Añadir esta línea al final de step
-    
-    
-
-

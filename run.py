@@ -46,6 +46,13 @@ def agent_portrayal(agent):
         portrayal["h"] = 1
         portrayal["w"] = 1
         portrayal["Filled"] = True
+    elif agent.estado == 2:
+        portrayal["Shape"] = "rect"
+        portrayal["Color"] = "yellow"
+        portrayal["Layer"] = 1
+        portrayal["h"] = 1
+        portrayal["w"] = 1
+        portrayal["Filled"] = True
 
     if isinstance(agent, CarAgent):
         portrayal["Shape"] = "rect"

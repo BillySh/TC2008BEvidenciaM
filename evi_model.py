@@ -207,33 +207,13 @@ estacionamientos = [
 ]
 
 semaforoR = [
-    (5, 15),
-    (6, 15),
-    (0, 12),
-    (1, 12),
-    (12, 2),
-    (13, 2),
-    (14, 3),
-    (15, 3),
-    (22, 7),
-    (23, 7),
     (14, 21),
     (15, 21),
 ]
 
 semaforoV = [
-    (2, 10),
-    (2, 11),
-    (7, 16),
-    (7, 17),
     (16, 22),
     (16, 23),
-    (11, 0),
-    (11, 1),
-    (16, 4),
-    (16, 5),
-    (21, 8),
-    (21, 9),
 ]
 
 # ------------------------------------------- Grafo---------------------------------
@@ -338,7 +318,7 @@ class semaforoRAgent(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.agentT = 2  # Semaforo
-        self.estado = 0  # Color del semaforo 0 = rojo 1 = verde 2 = amarillo
+        self.estado = 2  # Color del semaforo 0 = rojo 1 = verde 2 = amarillo
         self.paso = 0
 
     def change(self):
@@ -350,13 +330,17 @@ class semaforoRAgent(Agent):
     def add(self):
         self.paso += 1
 
+    def check_signal():
+        contents = self.model.grid.get_cell_list_contents((15, 23))
+        return contents.estado
+
     def step(self):
-        if (self.paso % 10) == 0:
-            if self.estado == 0:
-                self.change()
-            else:
-                self.changeB()
-        self.add()
+        if(self.check_signal == 0):
+            self.change()
+        if(self.check_signal == 1):
+            self.changeB()
+        if(self.check_signal == 2):
+            self.changeA()
         pass
 
 
@@ -364,7 +348,7 @@ class semaforoVAgent(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.agentT = 2  # Semaforo
-        self.estado = 1  # Color del semaforo 0 = rojo 1 = verde 2 = amarillo
+        self.estado = 2  # Color del semaforo 0 = rojo 1 = verde 2 = amarillo
         self.paso = 0
 
     def change(self):
@@ -373,19 +357,69 @@ class semaforoVAgent(Agent):
     def changeB(self):
         self.estado = 1
 
+    def changeC(self):
+        self.estado = 2
+
     def add(self):
         self.paso += 1
 
     def step(self):
-        if (self.paso % 10) == 0:
+        if () == 0:
             if self.estado == 1:
                 self.change()
             else:
                 self.changeB()
         self.add()
-
         pass
 
+
+class SemaforoSignal(Agent):
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+        self.agentT = 2
+        self.estado = 0  # 0 amarillo 1 derecha 2 izquierda
+        self.paso = 0
+
+    def change(self):
+        self.estado = 0
+
+    def changeB(self):
+        self.paso = 1
+
+    def add(self):
+        self.paso += 1
+
+    def is_car_near(self):
+        x, y = self.pos
+        agents_left = self.model.grid.get_cell_list_contents((x + 2, y - 1))
+        print(agents_left)
+        for agent in agents_left:
+            if isinstance(agent, CarAgent):
+                print("hay agente en la derecha")
+                print(agent.pos)
+                return "Derecha"
+        agents_right = self.model.grid.get_cell_list_contents((x, y - 3))
+        for agent in agents_right:
+            if isinstance(agent, CarAgent):
+                print("hay agente abajo")
+                return "Abajo"
+        return "Nada"
+
+    
+    def step(self):
+        self.is_car_near()
+        print(self.is_car_near())
+        if(self.is_car_near() == "Derecha"):
+            print("derecha")
+            self.estado = 1
+        if(self.is_car_near() == "Abajo"):
+            print("abajo")
+            self.estado = 2
+        if(self.is_car_near() == "Nada"):
+            print("nada")
+            self.estado = 0
+        pass
+            
 
 # --------------------------------------Main AGENT------------------------------------------
 
@@ -510,6 +544,10 @@ class CarModel(Model):
             self.schedule.add(pavA)
             self.grid.place_agent(pavA, (x, y))
             o += 1
+        semaforoSig = SemaforoSignal(o, self)
+        self.schedule.add(semaforoSig)
+        self.grid.place_agent(semaforoSig, (15, 23))
+        o+=1
 
     def dijkstra(self, inicio, destino):
         ruta_mas_corta = nx.shortest_path(
@@ -519,7 +557,6 @@ class CarModel(Model):
     
     def send_positions_to_server(self):
             positions_data = {f"car_{car_agent_agent.unique_id}": [car_agent_agent.pos[0], car_agent_agent.pos[1]] for car_agent_agent in self.schedule.agents if isinstance(car_agent_agent, CarAgent)}
-            print("PositionData:", positions_data)
             requests.post("http://127.0.0.1:5000/update_positions", json=positions_data)
 
     def step(self):

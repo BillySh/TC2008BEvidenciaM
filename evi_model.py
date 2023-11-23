@@ -567,7 +567,23 @@ class CarModel(Model):
             for car_agent_agent in self.schedule.agents
             if isinstance(car_agent_agent, CarAgent)
         }
+        semaforoR_data = {
+            f"semaforo_{semaforoRAgent_agent.unique_id}": [semaforoRAgent_agent.estado]
+            for semaforoRAgent_agent in self.schedule.agents
+            if isinstance(semaforoRAgent_agent, semaforoRAgent)
+        }
+
+        semaforoV_data = {
+            f"semaforo_{semaforoRAgent_agent.unique_id}": [semaforoRAgent_agent.estado]
+            for semaforoRAgent_agent in self.schedule.agents
+            if isinstance(semaforoRAgent_agent, semaforoVAgent)
+        }
+
+        semaforoV_data |= semaforoR_data
+
+        print("SemVData:", semaforoV_data)
         requests.post("http://127.0.0.1:5000/update_positions", json=positions_data)
+        requests.post("http://127.0.0.1:5000/update_estados", json=semaforoV_data)
 
     def step(self):
         self.schedule.step()

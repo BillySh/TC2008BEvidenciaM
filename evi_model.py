@@ -337,7 +337,7 @@ class semaforoRAgent(Agent):
         contents = self.model.grid.get_cell_list_contents((15, 23))
         for content in contents:
             if isinstance(content, SemaforoSignal):
-                return content.estado
+                return content.state
 
     def step(self):
         if self.check_signal() == 0:
@@ -372,7 +372,7 @@ class semaforoVAgent(Agent):
         contents = self.model.grid.get_cell_list_contents((15, 23))
         for content in contents:
             if isinstance(content, SemaforoSignal):
-                return content.estado
+                return content.state
 
     def step(self):
         if self.check_signal() == 0:
@@ -389,6 +389,7 @@ class SemaforoSignal(Agent):
         super().__init__(unique_id, model)
         self.agentT = 2
         self.state = 0  # 0 amarillo 1 derecha 2 izquierda
+        self.estado = 3
         self.paso = 0
         self.steps_in_current_state = (
             0  # Track the number of steps in the current state

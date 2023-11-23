@@ -389,6 +389,7 @@ class SemaforoSignal(Agent):
         super().__init__(unique_id, model)
         self.agentT = 2
         self.state = 0  # 0 amarillo 1 derecha 2 izquierda
+        self.estado = 0
         self.paso = 0
         self.steps_in_current_state = (
             0  # Track the number of steps in the current state
@@ -557,16 +558,18 @@ class CarModel(Model):
         )
         return ruta_mas_corta
 
+
     def send_positions_to_server(self):
-        positions_data = {
-            f"car_{car_agent_agent.unique_id}": [
-                car_agent_agent.pos[0],
-                car_agent_agent.pos[1],
-            ]
-            for car_agent_agent in self.schedule.agents
-            if isinstance(car_agent_agent, CarAgent)
-        }
+        positions_data = {f"car_{car_agent_agent.unique_id}": [car_agent_agent.pos[0], car_agent_agent.pos[1]] for car_agent_agent in self.schedule.agents if isinstance(car_agent_agent, CarAgent)}
+        semaforoR_data = {f"semaforo_{semaforoRAgent_agent.unique_id}": [semaforoRAgent_agent.estado] for semaforoRAgent_agent in self.schedule.agents if isinstance(semaforoRAgent_agent, semaforoRAgent)}
+
+        semaforoV_data = {f"semaforo_{semaforoRAgent_agent.unique_id}": [semaforoRAgent_agent.estado] for semaforoRAgent_agent in self.schedule.agents if isinstance(semaforoRAgent_agent, semaforoVAgent)}
+        
+        semaforoV_data |= semaforoR_data
+
+        print("SemVData:", semaforoV_data)
         requests.post("http://127.0.0.1:5000/update_positions", json=positions_data)
+        requests.post("http://127.0.0.1:5000/update_estados", json=semaforoV_data)
 
     def step(self):
         self.schedule.step()
